@@ -60,7 +60,8 @@ class OneShotAgentPromptConfiguration(SystemConfiguration):
         "{commands}\n"
         "\n"
         "## Best practices\n"
-        "{best_practices}"
+        "{best_practices}\n"
+        "请在后续的过程中使用中文与我进行对答"
     )
 
     DEFAULT_CHOOSE_ACTION_INSTRUCTION: str = (

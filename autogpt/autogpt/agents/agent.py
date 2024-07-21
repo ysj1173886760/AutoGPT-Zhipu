@@ -136,7 +136,10 @@ class Agent(BaseAgent[OneShotAgentActionProposal], Configurable[AgentSettings]):
         )
         self.git_ops = GitOperationsComponent()
         self.image_gen = ImageGeneratorComponent(self.file_manager.workspace)
-        self.web_search = WebSearchComponent()
+        self.web_search = WebSearchComponent(
+          llm_provider,
+          app_config.app_data_dir
+        )
         self.web_selenium = WebSeleniumComponent(
             llm_provider,
             app_config.app_data_dir,
