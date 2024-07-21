@@ -9,6 +9,7 @@ from .anthropic import ANTHROPIC_CHAT_MODELS, AnthropicModelName, AnthropicProvi
 from .groq import GROQ_CHAT_MODELS, GroqModelName, GroqProvider
 from .llamafile import LLAMAFILE_CHAT_MODELS, LlamafileModelName, LlamafileProvider
 from .openai import OPEN_AI_CHAT_MODELS, OpenAIModelName, OpenAIProvider
+from .zhipu_openai import ZHIPU_CHAT_MODELS, ZhipuModelName, ZhipuAIProvider
 from .schema import (
     AssistantChatMessage,
     BaseChatModelProvider,
@@ -25,7 +26,7 @@ from .schema import (
 
 _T = TypeVar("_T")
 
-ModelName = AnthropicModelName | GroqModelName | LlamafileModelName | OpenAIModelName
+ModelName = AnthropicModelName | GroqModelName | LlamafileModelName | OpenAIModelName | ZhipuModelName
 EmbeddingModelProvider = OpenAIProvider
 
 CHAT_MODELS = {
@@ -33,6 +34,7 @@ CHAT_MODELS = {
     **GROQ_CHAT_MODELS,
     **LLAMAFILE_CHAT_MODELS,
     **OPEN_AI_CHAT_MODELS,
+    **ZHIPU_CHAT_MODELS,
 }
 
 
@@ -123,6 +125,9 @@ class MultiProvider(BaseChatModelProvider[ModelName, ModelProviderSettings]):
     def get_available_providers(self) -> Iterator[ChatModelProvider]:
         for provider_name in ModelProviderName:
             self._logger.debug(f"Checking if {provider_name} is available...")
+            if provider_name == ModelProviderName.LLAMAFILE:
+                self._logger.debug(f"skip llama file provider")
+                continue
             try:
                 yield self._get_provider(provider_name)
                 self._logger.debug(f"{provider_name} is available!")
@@ -180,6 +185,7 @@ class MultiProvider(BaseChatModelProvider[ModelName, ModelProviderSettings]):
                 ModelProviderName.GROQ: GroqProvider,
                 ModelProviderName.LLAMAFILE: LlamafileProvider,
                 ModelProviderName.OPENAI: OpenAIProvider,
+                ModelProviderName.ZHIPU: ZhipuAIProvider,
             }[provider_name]
         except KeyError:
             raise ValueError(f"{provider_name} is not a known provider") from None
@@ -194,4 +200,5 @@ ChatModelProvider = (
     | LlamafileProvider
     | OpenAIProvider
     | MultiProvider
+    | ZhipuAIProvider
 )

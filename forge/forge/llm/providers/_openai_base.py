@@ -86,10 +86,16 @@ class _BaseOpenAIProvider(BaseModelProvider[_ModelName, _ModelProviderSettings])
     async def get_available_models(
         self,
     ) -> Sequence[ChatModelInfo[_ModelName] | EmbeddingModelInfo[_ModelName]]:
-        _models = (await self._client.models.list()).data
-        return [
-            self.MODELS[cast(_ModelName, m.id)] for m in _models if m.id in self.MODELS
+        # hack for zhipu
+        result = [
+            self.MODELS[key] for key in self.MODELS.keys()
         ]
+        logging.debug("{}".format(result))
+        return result
+        # _models = (await self._client.models.list()).data
+        # return [
+        #     self.MODELS[cast(_ModelName, m.id)] for m in _models if m.id in self.MODELS
+        # ]
 
     def get_token_limit(self, model_name: _ModelName) -> int:
         """Get the maximum number of input tokens for a given model"""
@@ -133,6 +139,7 @@ class BaseOpenAIChatProvider(
 
     async def get_available_chat_models(self) -> Sequence[ChatModelInfo[_ModelName]]:
         all_available_models = await self.get_available_models()
+        logging.debug("type {}".format(type(all_available_models)))
         return [
             model
             for model in all_available_models
@@ -348,8 +355,12 @@ class BaseOpenAIChatProvider(
             return await self._client.chat.completions.create(
                 **completion_kwargs,  # type: ignore
             )
+        
+        logging.debug(f"completion request: {completion_kwargs}")
 
         completion = await _create_chat_completion_with_retry()
+
+        logging.debug(f"completion response: {completion}")
 
         if completion.usage:
             prompt_tokens_used = completion.usage.prompt_tokens
